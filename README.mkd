@@ -12,4 +12,4 @@ Installation
 
 2. Create a key binding in your users key binding preferences. For instance, the following binds `ctrl+shift+y` to the plugin:
 
-    `{"keys": ["ctrl+shift+y"], "command": "yaspeller"}`
+	`{"keys": ["ctrl+shift+y"], "command": "yaspeller"}`
