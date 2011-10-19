@@ -1,0 +1,15 @@
+Sublime Text 2 Yaspeller Plugin
+================================
+
+This plugin lets you spell russian text using Yandex.Speller service.
+
+Installation
+------------
+
+**Manual**
+
+1. Copy yaspeller.py to your User folder within your Packages directory. Eg., on Mac, this is `~/Library/Application\ Support/Sublime\ Text\ 2/Packages/User/`.
+
+2. Create a key binding in your users key binding preferences. For instance, the following binds `ctrl+shift+y` to the plugin:
+
+    `{"keys": ["ctrl+shift+y"], "command": "yaspeller"}`
