@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from threading import Thread, Lock
-import urllib
+import urllib.request
+import urllib.parse
 import json
-from StringIO import StringIO
-
 import sublime, sublime_plugin
 
 IGNORE_UPPERCASE = 1
@@ -24,23 +23,41 @@ class YaspellerCommand(sublime_plugin.TextCommand):
     regions_lock = Lock()
 
     def check_text(self, start, end, text):
-        params = urllib.urlencode({
+        params = urllib.parse.urlencode({
             'text': text.encode('utf-8'),
             'lang': 'ru',
-            'options': IGNORE_LATIN | NO_SUGGEST
-
-        })
+            'options': IGNORE_LATIN
+        }).encode('utf-8')
 
         try:
-            data = urllib.urlopen(SERVICE_URL, params)
+            data = urllib.request.urlopen(SERVICE_URL, params)
             code = data.getcode()
 
             if code == 413:
                 sublime.status_message("Text is too large.")
                 return
 
-            response = StringIO(data.read())
-            blocks = json.load(response)
+            if code == 1:
+                sublime.status_message("ERROR_UNKNOWN_WORD (слова нет в словаре)")
+                return
+
+            if code == 2:
+                sublime.status_message("ERROR_REPEAT_WORD (повтор слова)")
+                return
+
+            if code == 3:
+                sublime.status_message("ERROR_CAPITALIZATION (неверное употребление прописных и строчных букв)")
+                return
+
+            if code == 4:
+                sublime.status_message("ERROR_TOO_MANY_ERRORS (текст содержит слишком много ошибок")
+                return
+
+            response = data.read().decode('utf-8')
+            blocks = json.loads(response)
+            for val in blocks:
+                print(val['s'])
+
             regions = []
             for block in blocks:
                 regions.append(
@@ -62,7 +79,7 @@ class YaspellerCommand(sublime_plugin.TextCommand):
         bufferSize = self.view.size()
         threads = []
 
-        for buffer_start in xrange(0, bufferSize, SERVICE_SYMBOLS_LIMIT):
+        for buffer_start in range(0, bufferSize, SERVICE_SYMBOLS_LIMIT):
             if bufferSize < buffer_start + SERVICE_SYMBOLS_LIMIT:
                 buffer_end = buffer_start + (bufferSize % SERVICE_SYMBOLS_LIMIT)
             else:
@@ -79,7 +96,3 @@ class YaspellerCommand(sublime_plugin.TextCommand):
             thread.join(1)
 
         self.view.add_regions('yaspeller', self.regions, 'string')
-
-
-
-
